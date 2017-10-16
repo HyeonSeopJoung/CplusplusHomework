@@ -14,7 +14,8 @@ Author : Á¤Çö¼· (21600665)
 #include <string>
 #include <cstring>
 #include <ctype.h>
-#define FILE "books.txt"
+
+#define READFILE "books.txt"
 #define SIZE 1000
 
 using namespace std;
@@ -32,7 +33,7 @@ typedef struct book {
 
 
 void load();
-void save();
+void save(string filename);
 void print();
 void insert(string parser);
 void lend(string parser);
@@ -44,11 +45,11 @@ int isNumber(string str);
 void print_nth_list(int n);
 void print_category();
 void print_manual();
-void print_returned();
+void print_returned(int n);
 void print_lend();
 void announce();
 
-namespace mine {
+namespace mine {		//
 	book books[SIZE];
 	int size = 0;
 }
@@ -57,10 +58,10 @@ namespace mine {
 
 int main(void) {
 	string command;
-	string parser="";
-	load();
+	string parser = "";
+	load();					//initial screen
 	print();
-	while (1) {
+	while (1) {				//event loop
 		print_manual();
 		cout << ">> ";
 		cin >> command;
@@ -69,8 +70,7 @@ int main(void) {
 			insert(parser);
 		}
 		else if (_stricmp(command.c_str(), "save") == 0) {
-			save();
-			cout << "\nSaved" << endl;
+			save(parser);
 		}
 		else if (_stricmp(command.c_str(), "exit") == 0) {
 			break;
@@ -81,29 +81,28 @@ int main(void) {
 			print();
 		else if (_stricmp(command.c_str(), "returned") == 0)
 			returned(parser);
-		else if (_stricmp(command.c_str(), "passday")==0)
+		else if (_stricmp(command.c_str(), "passday") == 0)
 			passday();
 		else
-			cout << "  Error : There is no command " << command <<" !  Please check the command."<< endl;
+			cout << "  Error : There is no command " << command << " !  Please check the command." << endl;
 	}
 
 	return 0;
 }
 
 void load() {
-	ifstream rdata(FILE);
+	ifstream rdata(READFILE);
 
 	string parser;
 	string str;
 
-	int tap=0;
 	for (int i = 0; getline(rdata, parser, '\n'); i++) {
 		char ch;
 		int div = 0;
-		for (unsigned int j = 0; j < parser.size()+1; j++) {
-			if(j<parser.size())
+		for (unsigned int j = 0; j < parser.size() + 1; j++) {
+			if (j < parser.size())
 				ch = parser[j];
-			if (ch != ';' && j<parser.size() ) {
+			if (ch != ';' && j < parser.size()) {
 				str += ch;
 			}
 			else {
@@ -129,19 +128,32 @@ void load() {
 				}
 				str = "";
 				div++;
-			}	
+			}
 		}
 		mine::size++;
 	}
-	
+
 }
 
-void save() {
-	ofstream wdata(FILE);
+void save(string filename) {
+	filename = trim(filename);
+	for (int i = 0; i < (signed)filename.size(); i++) {
+		if (filename[i] == ' ') {
+			cout << "  Filename should not contain space." << endl;
+			return;
+		}
+	}
+	if (filename.size() == 0){
+		filename = READFILE;
+	}
+	
+	ofstream wdata(filename);
 	
 	for (int i = 0; i < mine::size; i++) {
 		wdata << mine::books[i].title << "; " << mine::books[i].author << "; " << mine::books[i].year << "; " << mine::books[i].edition << "; " << mine::books[i].borrower << "; " << mine::books[i].days << "; " << endl;
 	}
+
+	cout << "\nSaved in "<<filename << "!!" << endl;
 
 }
 
@@ -269,7 +281,7 @@ void returned(string parser) {
 			}
 			mine::books[i].borrower = "None";
 			mine::books[i].days = 0;
-			print_returned();
+			print_returned(i);
 			return;
 		}
 	}
@@ -368,7 +380,7 @@ void print_manual() {
 
 	cout << "1. INSERT BookTitle; Author; PubYear; Edition" << endl
 		<< "2. LEND BookTitle; Person Borrowing; How many days" << endl
-		<< "3. SAVE " << FILE << endl
+		<< "3. SAVE " << "new_filename.txt" << endl
 		<< "4. RETURNED BookTitle" << endl
 		<< "5. PASSDAY" << endl
 		<< "6. PRINT" << endl
@@ -379,7 +391,7 @@ void print_manual() {
 	cout << endl;
 }
 
-void print_returned() {
+void print_returned(int n) {
 	cout << endl;
 
 	for (int i = 0; i < 30; i++)
@@ -390,10 +402,8 @@ void print_returned() {
 	cout << endl;
 
 	print_category();
-	for (int i = 0; i < mine::size; i++) {
-		if (_stricmp(mine::books[i].borrower.c_str(), "none") == 0)
-			print_nth_list(i);
-	}
+	print_nth_list(n);
+
 	for (int i = 0; i < 45; i++)
 		cout << "-";
 	cout << " END ";

@@ -47,7 +47,7 @@ void print_category();
 void print_manual();
 void print_returned(int n);
 void print_lend();
-void announce();
+void announce();	//반납일이거나 반납일이 지나간 사람들 announce.
 
 namespace mine {		//
 	book books[SIZE];
@@ -249,24 +249,30 @@ void lend(string parser) {
 		return;
 	}
 	int n = 0;
+
+	if (stoi(days) <= 0) {
+		cout << "  Lend for more days" << endl;
+	}
 	for (int n = 0; n < mine::size; n++) {		//book title search
 		if (_stricmp(title.c_str(), mine::books[n].title.c_str()) == 0) {	//if book is exist
 			if (_stricmp("none", mine::books[n].borrower.c_str()) != 0) {	//and if someone already borrow the book
-				cout << endl<<"  Someone already borrowed the book." << endl;
+				cout <<"  Someone already borrowed the book." << endl;
 				return;
 			}
-			else {
+			else if(stoi(days) > 0){		//book을 빌릴 수 있을때. days가 0초과 인지 검사.
 				mine::books[n].borrower = borrower;
-				mine::books[n].days = std::stoi(days);
-				
+				mine::books[n].days = std::stoi(days);	
 				print_lend();
+				return;
+			}
+			else {	// book을 찾았으나 days가 0 이하면
 				return;
 			}
 		}
 	}
 
-
-	cout <<endl <<"  NO SUCH BOOK!" << endl;
+	//끝까지 book을 못찾으면.
+	cout <<"  NO SUCH BOOK!" << endl;
 	return;
 }
 
@@ -309,6 +315,10 @@ string trim(string str) {
 }
 
 int isNumber(string str) {
+	if (str.size() < 1)
+		return 0;
+	if (str[0] == '-')
+		str = str.substr(1, str.size());
 	if (str.size() < 1)
 		return 0;
 	for (unsigned int i = 0; i < str.size(); i++)
@@ -409,6 +419,8 @@ void print_returned(int n) {
 	cout << " END ";
 	for (int i = 0; i < 45; i++)
 		cout << "-";
+	cout << endl;
+	announce();
 
 }
 
@@ -435,6 +447,7 @@ void print_lend() {
 	for (int i = 0; i < 45; i++)
 		cout << "-";
 	cout << endl;
+	announce();
 }
 
 void passday() {
